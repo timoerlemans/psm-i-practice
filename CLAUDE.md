@@ -4,11 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Single-file React application (`psm-exam.jsx`) — a PSM-I (Professional Scrum Master I) practice exam simulator based on the Scrum Guide 2020. The component is designed to be embedded in a host environment (not a standalone app with its own build system).
+PSM-I (Professional Scrum Master I) practice exam simulator based on the Scrum Guide 2020. React component (`psm-exam.jsx`) with questions loaded from `questions.json`. Deployable standalone via `index.html` (GitHub Pages) or embeddable in a host environment.
 
 ## Architecture
 
-The entire app lives in `psm-exam.jsx` as a default-exported React component (`PSMExam`) with no external dependencies beyond React.
+- **`psm-exam.jsx`** — Main React component (default export `PSMExam`), no external dependencies beyond React
+- **`questions.json`** — Question pool (160+ questions), loaded at runtime via fetch
+- **`index.html`** — Standalone entry point using React/Babel from CDN with SRI hashes; polyfills `window.storage` with localStorage
 
 ### Component Structure
 
@@ -19,16 +21,16 @@ The entire app lives in `psm-exam.jsx` as a default-exported React component (`P
 
 ### Key Design Decisions
 
-- **All 80 questions are defined inline** in the `QUESTIONS` array at the top of the file. Each question has: `id`, `category`, `question`, `type` ("single"/"multiple"), `options`, `correct` (array of 0-based indices), and `explanation`
-- **State persistence** uses `window.storage` (host-provided API, not localStorage) via `saveState`/`loadState`/`clearState` at key `"psm-exam-state"` — allows resuming an in-progress exam
-- **Questions are shuffled** on each new exam start via Fisher-Yates shuffle
+- **Questions loaded from `questions.json`** at runtime via `loadQuestions()`. Pool is cached after first load. Each exam randomly selects 80 questions (`EXAM_SIZE`) from the full pool via Fisher-Yates shuffle
+- **State persistence** uses `window.storage` (host-provided API, not localStorage) via `saveState`/`loadState`/`clearState` at key `"psm-exam-state"`. State is saved on question/answer changes plus every 30 seconds (not every timer tick)
 - **All styling is inline** — no CSS files, no CSS-in-JS library. Uses DM Sans font loaded via Google Fonts CDN
-- **Exam config**: 60-minute timer (`TOTAL_TIME`), 85% pass threshold (`PASS_PERCENTAGE`), 80 questions
-- **Question flagging**: Users can flag questions for review; flagged state persists and is filterable in the review screen
+- **Exam config**: 60-minute timer (`TOTAL_TIME`), 85% pass threshold (`PASS_PERCENTAGE`), 80 questions per attempt (`EXAM_SIZE`)
 
-### Categories
+### Question Schema (questions.json)
 
-Questions span 6 categories: Scrum Theory, Scrum Values, Scrum Team, Scrum Events, Artifacts & Commitments, Scenarios. Category colors are defined in `QuestionCard`'s `catColors` object.
+Each question object: `id`, `category`, `question`, `type` ("single"/"multiple"), `options` (string[]), `correct` (0-based index array), `explanation`. Multi-select questions also have `selectCount`.
+
+Categories: Scrum Theory, Scrum Values, Scrum Team, Scrum Events, Artifacts & Commitments, Scenarios.
 
 ## Commands
 
@@ -37,8 +39,7 @@ Questions span 6 categories: Scrum Theory, Scrum Values, Scrum Team, Scrum Event
 
 ## Development Notes
 
-- The JSX file is consumed by an external host/runtime that provides `window.storage`
-- When adding questions, follow the existing `QUESTIONS` array schema exactly. The `correct` array uses 0-based indices into `options`
+- When adding questions, add them to `questions.json` following the existing schema. The `correct` array uses 0-based indices into `options`
 - Multi-select questions must include `selectCount` to indicate how many answers the user should choose
-- The timer auto-submits the exam when it reaches zero
-- State is saved every 30 seconds during the exam (not on every timer tick) plus on every question/answer change
+- `index.html` uses Babel standalone to transform JSX at runtime — CDN scripts are pinned with SRI hashes
+- GitHub Pages deployment: main branch, root directory
