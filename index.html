@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PSM-I Practice Exam</title>
+    <meta name="description" content="Professional Scrum Master I practice exam — 80 questions based on the Scrum Guide 2020" />
+    <style>
+      body { margin: 0; padding: 0; background: #0a0e1a; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+      // Polyfill window.storage with localStorage for standalone use
+      if (!window.storage) {
+        window.storage = {
+          get: (key) => {
+            const value = localStorage.getItem(key);
+            return Promise.resolve(value ? { value } : null);
+          },
+          set: (key, value) => {
+            localStorage.setItem(key, value);
+            return Promise.resolve();
+          },
+          delete: (key) => {
+            localStorage.removeItem(key);
+            return Promise.resolve();
+          },
+        };
+      }
+    </script>
+    <script type="text/babel" data-type="module" src="psm-exam.jsx"></script>
+    <script type="text/babel">
+      const { useState, useEffect, useCallback, useRef } = React;
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      // Dynamic import workaround: load via fetch + babel transform
+    </script>
+    <script>
+      // Load and render the component
+      fetch("psm-exam.jsx")
+        .then((r) => r.text())
+        .then((code) => {
+          // Replace the ESM import/export for browser compatibility
+          const browserCode = code
+            .replace(/import\s*\{[^}]*\}\s*from\s*["']react["'];?/, "const { useState, useEffect, useCallback, useRef } = React;")
+            .replace(/export\s+default\s+/, "window.PSMExam = ");
+          const transformed = Babel.transform(browserCode, { presets: ["react"] }).code;
+          const script = document.createElement("script");
+          script.textContent = transformed;
+          document.body.appendChild(script);
+          const root = ReactDOM.createRoot(document.getElementById("root"));
+          root.render(React.createElement(window.PSMExam));
+        });
+    </script>
+  </body>
+</html>
