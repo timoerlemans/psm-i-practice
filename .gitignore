@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+!.env.ts
+!env.ts
+node_modules/
+.DS_Store
