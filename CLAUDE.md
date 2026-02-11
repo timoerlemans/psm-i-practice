@@ -11,12 +11,14 @@ Single-file React application (`psm-exam.jsx`) — a PSM-I (Professional Scrum M
 The entire app lives in `psm-exam.jsx` as a default-exported React component (`PSMExam`) with no external dependencies beyond React.
 
 ### Component Structure
+
 - **`PSMExam`** — Root component managing exam lifecycle via `phase` state: `loading` → `start` → `exam` → `review`
 - **`StartScreen`** — Landing page with exam info
 - **`QuestionCard`** — Renders a single question with single-select (radio) or multi-select (checkbox) options
 - **`ReviewScreen`** — Post-exam results with filtering (all/wrong/correct/flagged), per-category score breakdown, and expandable explanations
 
 ### Key Design Decisions
+
 - **All 80 questions are defined inline** in the `QUESTIONS` array at the top of the file. Each question has: `id`, `category`, `question`, `type` ("single"/"multiple"), `options`, `correct` (array of 0-based indices), and `explanation`
 - **State persistence** uses `window.storage` (host-provided API, not localStorage) via `saveState`/`loadState`/`clearState` at key `"psm-exam-state"` — allows resuming an in-progress exam
 - **Questions are shuffled** on each new exam start via Fisher-Yates shuffle
@@ -25,11 +27,18 @@ The entire app lives in `psm-exam.jsx` as a default-exported React component (`P
 - **Question flagging**: Users can flag questions for review; flagged state persists and is filterable in the review screen
 
 ### Categories
+
 Questions span 6 categories: Scrum Theory, Scrum Values, Scrum Team, Scrum Events, Artifacts & Commitments, Scenarios. Category colors are defined in `QuestionCard`'s `catColors` object.
+
+## Commands
+
+- `npm run format` — format all files with Prettier
+- `npm run format:check` — check formatting without writing
 
 ## Development Notes
 
-- No package.json, no build toolchain — this JSX file is consumed by an external host/runtime
+- The JSX file is consumed by an external host/runtime that provides `window.storage`
 - When adding questions, follow the existing `QUESTIONS` array schema exactly. The `correct` array uses 0-based indices into `options`
 - Multi-select questions must include `selectCount` to indicate how many answers the user should choose
 - The timer auto-submits the exam when it reaches zero
+- State is saved every 30 seconds during the exam (not on every timer tick) plus on every question/answer change
